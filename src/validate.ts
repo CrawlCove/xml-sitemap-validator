@@ -74,7 +74,7 @@ export const DEFAULT_OPTIONS: ValidateOptions = {
   maxBytes: 50 * 1024 * 1024,
   maxSitemaps: 50,
   timeoutMs: 15_000,
-  userAgent: 'crawlcove-sitemap-validator/1.0 (+https://github.com/CrawlCove/crawlcove-sitemap-validator)',
+  userAgent: 'crawlcove-sitemap-validator/1.0 (+https://github.com/CrawlCove/xml-sitemap-validator)',
   checkUrls: 0,
   now: () => new Date()
 }

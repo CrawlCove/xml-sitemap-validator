@@ -31,9 +31,9 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/CrawlCove/crawlcove-sitemap-validator.git"
+    "url": "https://github.com/CrawlCove/xml-sitemap-validator.git"
   },
-  "homepage": "https://crawlcove.com/tools/xml-sitemap-checker?utm_source=github&utm_medium=crawlcove-sitemap-validator",
+  "homepage": "https://crawlcove.com/tools/xml-sitemap-checker?utm_source=github&utm_medium=xml-sitemap-validator",
   "dependencies": {
     "commander": "^15.0.0",
     "fast-xml-parser": "^5.11.1"
