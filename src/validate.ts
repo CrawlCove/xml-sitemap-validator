@@ -43,6 +43,8 @@ export interface SitemapEntry {
 
 export interface SitemapReport {
   url: string
+  /** Set when `url` redirected; the sitemap that was actually validated. */
+  redirectedTo?: string
   kind: 'urlset' | 'sitemapindex' | 'unknown'
   urlCount: number
   bytes: number
@@ -110,6 +112,8 @@ function finding(code: FindingCode, message: string, loc?: string): Finding {
 
 export interface Fetched {
   status: number | null
+  /** The URL that actually answered, after redirects (null when nothing answered). */
+  finalUrl: string | null
   body: Buffer | null
   contentType: string | null
   fetchError: string | null
@@ -122,10 +126,10 @@ export async function fetchSitemapText(url: string, opts: ValidateOptions): Prom
   try {
     const res = await doFetch(url, { headers: { 'user-agent': opts.userAgent, accept: 'application/xml,text/xml,*/*' }, signal: controller.signal, redirect: 'follow' })
     const body = Buffer.from(await res.arrayBuffer())
-    return { status: res.status, body, contentType: res.headers.get('content-type'), fetchError: null }
+    return { status: res.status, finalUrl: res.url || url, body, contentType: res.headers.get('content-type'), fetchError: null }
   } catch (err) {
     const name = err instanceof Error ? err.name : String(err)
-    return { status: null, body: null, contentType: null, fetchError: name === 'AbortError' ? 'TIMEOUT' : (err as Error).message || name }
+    return { status: null, finalUrl: null, body: null, contentType: null, fetchError: name === 'AbortError' ? 'TIMEOUT' : (err as Error).message || name }
   } finally {
     clearTimeout(timer)
   }
@@ -179,7 +183,11 @@ export function validateXml(url: string, text: string, opts: ValidateOptions = D
     findings.push(finding('not-xml', `could not parse XML: ${(err as Error).message}`))
     return { ...base, kind: 'unknown' }
   }
-  const rootName = Object.keys(doc).find((k) => k !== '?xml')
+  // fast-xml-parser surfaces every processing instruction as a top-level
+  // key starting with "?" (the <?xml ...?> prolog, and the <?xml-stylesheet ...?>
+  // line that Yoast, Rank Math and most WordPress sitemaps emit so the XML
+  // renders as a styled page in a browser). None of those is the root element.
+  const rootName = Object.keys(doc).find((k) => !k.startsWith('?') && !k.startsWith('#'))
   if (rootName !== 'urlset' && rootName !== 'sitemapindex') {
     findings.push(finding('wrong-root', `root element is <${rootName ?? 'nothing'}>; expected <urlset> or <sitemapindex>`))
     return { ...base, kind: 'unknown' }
@@ -262,6 +270,7 @@ export async function validateSitemap(url: string, opts: ValidateOptions = DEFAU
     return { ...empty, bytes: fetched.body.length, findings: [finding('not-xml', `gzip data could not be decompressed: ${(err as Error).message}`)] }
   }
   const report: SitemapReport = { ...validateXml(url, decoded.text, opts), gzipped: decoded.gzipped, children: [] }
+  if (fetched.finalUrl !== null && fetched.finalUrl !== url) report.redirectedTo = fetched.finalUrl
 
   if (report.kind === 'sitemapindex' && depth === 0) {
     const childLocs = report.entries.map((e) => e.loc).filter((l) => safeUrl(l) !== null)

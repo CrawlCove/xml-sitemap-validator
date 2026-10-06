@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.0.1 — 2026-10-06
+
+- Fixed: a sitemap that starts with an `<?xml-stylesheet ...?>` processing
+  instruction (Yoast, Rank Math and most WordPress sitemaps do) was reported
+  as `wrong-root: root element is <?xml-stylesheet>`. Processing instructions
+  are now skipped when locating the root element.
+- When the sitemap URL redirects (`/sitemap.xml` to `/sitemap_index.xml` is the
+  common case) the report records `redirectedTo` and the CLI prints it beside
+  the requested URL.
+
 ## 1.0.0 — 2026-09-29
 
 Initial release.

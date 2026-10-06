@@ -15,6 +15,8 @@ export interface SitemapEntry {
 }
 export interface SitemapReport {
     url: string;
+    /** Set when `url` redirected; the sitemap that was actually validated. */
+    redirectedTo?: string;
     kind: 'urlset' | 'sitemapindex' | 'unknown';
     urlCount: number;
     bytes: number;
@@ -41,6 +43,8 @@ export declare const DEFAULT_OPTIONS: ValidateOptions;
 export declare const SEVERITY: Record<FindingCode, Severity>;
 export interface Fetched {
     status: number | null;
+    /** The URL that actually answered, after redirects (null when nothing answered). */
+    finalUrl: string | null;
     body: Buffer | null;
     contentType: string | null;
     fetchError: string | null;

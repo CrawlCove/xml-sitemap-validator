@@ -46,11 +46,11 @@ export async function fetchSitemapText(url, opts) {
     try {
         const res = await doFetch(url, { headers: { 'user-agent': opts.userAgent, accept: 'application/xml,text/xml,*/*' }, signal: controller.signal, redirect: 'follow' });
         const body = Buffer.from(await res.arrayBuffer());
-        return { status: res.status, body, contentType: res.headers.get('content-type'), fetchError: null };
+        return { status: res.status, finalUrl: res.url || url, body, contentType: res.headers.get('content-type'), fetchError: null };
     }
     catch (err) {
         const name = err instanceof Error ? err.name : String(err);
-        return { status: null, body: null, contentType: null, fetchError: name === 'AbortError' ? 'TIMEOUT' : err.message || name };
+        return { status: null, finalUrl: null, body: null, contentType: null, fetchError: name === 'AbortError' ? 'TIMEOUT' : err.message || name };
     }
     finally {
         clearTimeout(timer);
@@ -101,7 +101,11 @@ export function validateXml(url, text, opts = DEFAULT_OPTIONS) {
         findings.push(finding('not-xml', `could not parse XML: ${err.message}`));
         return { ...base, kind: 'unknown' };
     }
-    const rootName = Object.keys(doc).find((k) => k !== '?xml');
+    // fast-xml-parser surfaces every processing instruction as a top-level
+    // key starting with "?" (the <?xml ...?> prolog, and the <?xml-stylesheet ...?>
+    // line that Yoast, Rank Math and most WordPress sitemaps emit so the XML
+    // renders as a styled page in a browser). None of those is the root element.
+    const rootName = Object.keys(doc).find((k) => !k.startsWith('?') && !k.startsWith('#'));
     if (rootName !== 'urlset' && rootName !== 'sitemapindex') {
         findings.push(finding('wrong-root', `root element is <${rootName ?? 'nothing'}>; expected <urlset> or <sitemapindex>`));
         return { ...base, kind: 'unknown' };
@@ -192,6 +196,8 @@ export async function validateSitemap(url, opts = DEFAULT_OPTIONS, depth = 0) {
         return { ...empty, bytes: fetched.body.length, findings: [finding('not-xml', `gzip data could not be decompressed: ${err.message}`)] };
     }
     const report = { ...validateXml(url, decoded.text, opts), gzipped: decoded.gzipped, children: [] };
+    if (fetched.finalUrl !== null && fetched.finalUrl !== url)
+        report.redirectedTo = fetched.finalUrl;
     if (report.kind === 'sitemapindex' && depth === 0) {
         const childLocs = report.entries.map((e) => e.loc).filter((l) => safeUrl(l) !== null);
         if (childLocs.length > opts.maxSitemaps)

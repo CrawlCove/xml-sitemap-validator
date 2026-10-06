@@ -54,6 +54,12 @@ describe('validateXml (pure)', () => {
     expect(codes(validateXml('https://a.test/s.xml', '<urlset></urlset>', OPTS)).sort()).toEqual(['empty', 'missing-namespace'])
   })
 
+  it('ignores processing instructions such as <?xml-stylesheet?> when finding the root', () => {
+    const r = validateXml('https://a.test/sitemap_index.xml', `<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type="text/xsl" href="//a.test/main-sitemap.xsl"?>\n<sitemapindex xmlns="${NS}"><sitemap><loc>https://a.test/post-sitemap.xml</loc><lastmod>2026-09-01T09:12:40+00:00</lastmod></sitemap></sitemapindex>`, OPTS)
+    expect(r.kind).toBe('sitemapindex')
+    expect(r.findings).toEqual([])
+    expect(r.urlCount).toBe(1)
+  })
   it('enforces the count and size limits (overridden small for the test)', () => {
     const urls = Array.from({ length: 6 }, (_, i) => `<url><loc>https://a.test/${i}</loc></url>`).join('')
     const r = validateXml('https://a.test/s.xml', `<urlset xmlns="${NS}">${urls}</urlset>`, { ...OPTS, maxUrls: 5, maxBytes: 100 })
@@ -82,6 +88,19 @@ describe('validateSitemap over HTTP', () => {
     expect(allFindings(r)).toEqual([])
   })
 
+  it('follows a redirected sitemap URL and records where it landed', async () => {
+    const base = await server.listen()
+    server.set({
+      '/sitemap.xml': { status: 301, headers: { location: '/sitemap_index.xml' } },
+      '/sitemap_index.xml': { headers: { 'content-type': 'application/xml' }, body: `<?xml version="1.0"?><?xml-stylesheet type="text/xsl" href="/s.xsl"?><sitemapindex xmlns="${NS}"><sitemap><loc>${base}/a.xml</loc></sitemap></sitemapindex>` },
+      '/a.xml': { headers: { 'content-type': 'application/xml' }, body: `<urlset xmlns="${NS}"><url><loc>${base}/</loc></url></urlset>` }
+    })
+    const r = await validateSitemap(`${base}/sitemap.xml`, OPTS)
+    expect(r.kind).toBe('sitemapindex')
+    expect(r.redirectedTo).toBe(`${base}/sitemap_index.xml`)
+    expect(r.children[0]?.redirectedTo).toBeUndefined()
+    expect(totalUrls(r)).toBe(1)
+  })
   it('reports a 404 sitemap and a child that is missing', async () => {
     server = new FixtureServer({})
     const base = await server.listen()

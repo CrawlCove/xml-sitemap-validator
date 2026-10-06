@@ -42,7 +42,7 @@ program
         process.exitCode = 1;
 });
 export function render(r, indent = '') {
-    const lines = [`${indent}${r.url}`];
+    const lines = [`${indent}${r.url}${r.redirectedTo ? `  (redirected to ${r.redirectedTo})` : ''}`];
     const what = r.kind === 'sitemapindex' ? `sitemap index, ${r.urlCount} sitemaps` : r.kind === 'urlset' ? `${r.urlCount} URLs` : 'unrecognised';
     lines.push(`${indent}  ${what}${r.gzipped ? ', gzipped' : ''}, ${(r.bytes / 1024).toFixed(0)} KB`);
     for (const f of r.findings)

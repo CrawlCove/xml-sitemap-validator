@@ -1,6 +1,6 @@
 {
   "name": "crawlcove-sitemap-validator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "XML sitemap validator CLI: fetch a sitemap or sitemap index, check it against the sitemaps.org protocol and Google's limits, flag bad URLs, lastmod dates and cross-host entries, exit non-zero in CI.",
   "type": "module",
   "bin": {
