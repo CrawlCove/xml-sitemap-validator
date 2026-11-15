@@ -1,3 +1,5 @@
+<a href="https://crawlcove.com/download?utm_source=github&utm_medium=readme&utm_campaign=xml-sitemap-validator"><img src="https://raw.githubusercontent.com/CrawlCove/.github/main/banners/xml-sitemap-validator.svg" width="1200" alt="xml-sitemap-validator: Check a sitemap or sitemap index against the sitemaps.org protocol and search engine limits. Flags bad URLs, lastmod dates and cross-host entries." /></a>
+
 # crawlcove-sitemap-validator
 
 An XML sitemap validator for the command line: point it at a sitemap (or just your site) and it checks the XML against the sitemaps.org protocol and the limits search engines enforce, follows a sitemap index into every child, gunzips `.gz` files, and tells you which `<loc>`, `<lastmod>`, `<changefreq>` or `<priority>` entries will be ignored — with a non-zero exit code for CI.
