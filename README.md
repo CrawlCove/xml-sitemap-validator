@@ -8,7 +8,7 @@ Prefer a browser? The same check runs at [crawlcove.com/tools/xml-sitemap-checke
 
 <img src="docs/demo.svg" width="980" alt="Terminal recording: validating the SEO test site sitemap finds 53 URLs and one that returns 404">
 
-*Recorded from a real run against [seo-test-site](https://github.com/CrawlCove/seo-test-site), a public site with 54 planted SEO problems that you can test against too.*
+*Recorded from a real run against [seo-test-site](https://github.com/CrawlCove/seo-test-site), a public site full of planted SEO problems that you can test against too.*
 
 ## Quick start
 
