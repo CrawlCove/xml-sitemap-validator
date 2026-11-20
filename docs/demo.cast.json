@@ -1,0 +1,32 @@
+{
+ "recorded": "2026-11-20T00:05:07.187Z",
+ "steps": [
+  {
+   "show": "npx github:CrawlCove/xml-sitemap-validator https://crawlcove.github.io/seo-test-site/sitemap.xml --check-urls 60",
+   "exit": 1,
+   "ms": 2606,
+   "lines": [
+    {
+     "t": 2595,
+     "text": "https://crawlcove.github.io/seo-test-site/sitemap.xml"
+    },
+    {
+     "t": 2595,
+     "text": "  53 URLs, 6 KB"
+    },
+    {
+     "t": 2595,
+     "text": "  ✗ url-not-ok: https://crawlcove.github.io/seo-test-site/products/sold-out.html returns HTTP 404"
+    },
+    {
+     "t": 2595,
+     "text": ""
+    },
+    {
+     "t": 2595,
+     "text": "1 sitemap(s), 53 URLs, 1 error(s), 0 warning(s)."
+    }
+   ]
+  }
+ ]
+}
